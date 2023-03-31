@@ -1,0 +1,563 @@
+---
+title: "STAT345 Midterm"
+author: "Tarren Nimmow"
+date: "2023-03-28"
+output:
+  word_document: default
+---
+
+```{r setup, echo=FALSE, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE, warning=FALSE, results='hide', message=FALSE}
+library(nbastatR)
+library(tidyverse)
+library(ggplot2)
+library(ggforce)
+library(gganimate)
+library(ggtext)
+library(png)
+library(grid)
+library(jpeg)
+img <- readJPEG("output-onlinejpgtools.jpg")
+```
+
+```{r, echo=FALSE, results='hide'}
+# This code chunk creates a new dataset of some bucks shooting stats from 2013-2021
+Sys.setenv(VROOM_CONNECTION_SIZE=500072)
+
+bucks_shots <- teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2013, nest_data = F, return_message = T) %>%
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2014, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2015, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2016, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2017, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2018, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2019, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2020, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2021, nest_data = F, return_message = T)) 
+
+bucks_shots <- select(bucks_shots, "namePlayer","yearSeason", "typeShot", "locationX", "locationY", "isShotMade", "yearSeason")
+```
+
+```{r, echo=FALSE, warning=FALSE}
+# This code creates a chart of every shot taken in a bucks season from 2014-2021
+ggplot(bucks_shots, aes(locationX, locationY, color = isShotMade, shape = typeShot)) +
+  theme(panel.background = element_rect(fill = "transparent", color = NA)) +
+  annotation_custom(rasterGrob(img), xmin=-252, xmax=252, ymin=-47.5, ymax=893) +
+  geom_point(mapping = aes(x=locationX, y=locationY), alpha = 0.5, size = .75) +
+  scale_color_manual(name = "Made/Missed", values= c("red", "green"), labels = c("Missed", "Made")) +
+  scale_shape_manual(name = "Shot Type", values = c(0,2), labels = c("2PT", "3PT")) +
+  ggtitle("Every Bucks Shot by Season") +
+  xlab("Baseline") +
+  ylab("Sideline") +
+  coord_fixed() +
+  transition_time(yearSeason) +
+  ease_aes('linear') +
+  labs(subtitle = 'Year: {closest_state}') +
+  theme(legend.text = element_text(size=12)) + 
+  theme(legend.key.size = unit(2, "lines")) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank()) +
+  transition_states(yearSeason, transition_length = 2, state_length = 10) +
+  ease_aes('linear')
+```
+
+The graphic shows every season’s shot attempts from 2013-2021
+It displays where the shot was taken from (location)
+It displays whether or not the shot was made (color)
+It displays the type of field goal attempted (shape)
+
+
+More detailed version
+The graphic shows every season's shot attempts from 2012-2021
+It displays where the shot was taken from (location)
+It displays whether or not the shot was made by the color of the point
+Cream: Shot was missed
+Green: Shot was made
+It displays the type of field goal attempted by shape
+Square: 2PT attempt
+Triangle: 3PT attempt
+
+
+
+2013
+
+Total Shots Attempted: 7196
+
+Total 3s Attempted: 1669
+
+Total 3s Made: 601
+
+3pt%: 36%
+
+Total 2s Attempted: 5527
+
+Total 2s Made: 2527
+
+2pt%: 45.7%
+
+
+
+2014
+
+Total Shots Attempted: 6735
+
+Total 3s Attempted: 1551
+
+Total 3s Made: 548
+
+3pt%: 35.3%
+
+Total 2s Attempted: 5184
+
+Total 2s Made: 2404
+
+2pt%: 46.3%
+
+
+
+2015
+
+Total Shots Attempted: 6722
+
+Total 3s Attempted: 1500
+
+Total 3s Made: 545
+
+3pt%: 36.3%
+
+Total 2s Attempted: 5222
+
+Total 2s Made: 2538
+
+2pt%: 48.6%
+
+
+
+2016
+
+Total Shots Attempted: 6726
+
+Total 3s Attempted: 1263
+
+Total 3s Made: 437
+
+3pt%: 34.6%
+
+Total 2s Attempted: 5463
+
+Total 2s Made: 2705
+
+2pt%: 49.5%
+
+
+
+2017
+
+Total Shots Attempted: 6701
+
+Total 3s Attempted: 1932
+
+Total 3s Made: 713
+
+3pt%: 36.9%
+
+Total 2s Attempted: 4769
+
+Total 2s Made: 2462
+
+2pt%: 51.6%
+
+
+
+2018
+
+Total Shots Attempted: 6807
+
+Total 3s Attempted: 2024
+
+Total 3s Made: 718
+
+3pt%: 35.5%
+
+Total 2s Attempted: 4783
+
+Total 2s Made: 2539
+
+2pt%: 53.1%
+
+
+
+2019
+
+Total Shots Attempted: 7471
+
+Total 3s Attempted: 3134
+
+Total 3s Made: 1105
+
+3pt%: 35.3%
+
+Total 2s Attempted: 4337
+
+Total 2s Made: 2450
+
+2pt%: 56.5%
+
+
+
+2020
+
+Total Shots Attempted: 6638
+
+Total 3s Attempted: 2840
+
+Total 3s Made: 1007
+
+3pt%: 35.5%
+
+Total 2s Attempted: 3798
+
+Total 2s Made: 2153
+
+2pt%: 56.7%
+
+
+
+2021
+
+Total Shots Attempted: 6610
+
+Total 3s Attempted: 2669
+
+Total 3s Made: 1038
+
+3pt%: 38.9%
+
+Total 2s Attempted: 3941
+
+Total 2s Made: 2183
+
+2pt%: 55.4
+
+
+```{r, echo=FALSE}
+# This creates plots of every shot Khris Middleton took in every season from 2014-2021
+ggplot(data = filter(bucks_shots, namePlayer == "Khris Middleton")) +
+  theme(panel.background = element_rect(fill = "transparent", color = NA)) +
+  annotation_custom(rasterGrob(img), xmin=-250, xmax=250, ymin=-47.5, ymax=892.5) +
+  geom_point(mapping = aes(x = locationX, y = locationY, color = isShotMade, shape = typeShot)) +
+  scale_color_manual(name = "Made/Missed", values= c("red", "green"), labels = c("Missed", "Made")) +
+  scale_shape_manual(values = c("2PT Field Goal" = 1, "3PT Field Goal" = 2)) +
+  labs(title = "Khris Middleton Shot Chart (Regular Season)", x = "X-Coordinate", y = "Y-Coordinate", color = "Made Shot", shape = "Type of Shot", subtitle = 'Year: {closest_state}') +
+  coord_fixed() +
+  transition_states(yearSeason, transition_length = 2, state_length = 5) +
+  ease_aes('linear') +
+  theme_void()
+```
+
+2014 Khris Middleton
+
+Total Shots Attempted: 854
+
+Total 3s Attempted: 290
+
+Total 3s Made: 120
+
+3pt%: 41.4%
+
+Total 2s Attempted: 564
+
+Total 2s Made: 256
+
+2pt%: 45.4%
+
+
+
+2015 Khris Middleton
+
+Total Shots Attempted: 869
+
+Total 3s Attempted: 268
+
+Total 3s Made: 109
+
+3pt%: 40.7%
+
+Total 2s Attempted: 601
+
+Total 2s Made: 297
+
+2pt%: 49.4%
+
+
+
+2016 Khris Middleton
+
+Total Shots Attempted: 1142
+
+Total 3s Attempted: 361
+
+Total 3s Made: 143
+
+3pt%: 39.6%
+
+Total 2s Attempted: 781
+
+Total 2s Made: 364
+
+2pt%: 46.6%
+
+
+
+2017 Khris Middleton
+
+Total Shots Attempted: 333
+
+Total 3s Attempted: 104
+
+Total 3s Made: 42.3%
+
+3pt%: 
+
+Total 2s Attempted: 229
+
+Total 2s Made: 105
+
+2pt%: 45.9%
+
+
+
+2018 Khris Middleton
+
+Total Shots Attempted: 1272
+
+Total 3s Attempted: 407
+
+Total 3s Made: 146
+
+3pt%: 35.9%
+
+Total 2s Attempted: 865
+
+Total 2s Made: 447
+
+2pt%: 51.7%
+
+
+
+2019 Khris Middleton
+
+Total Shots Attempted: 1148
+
+Total 3s Attempted: 474
+
+Total 3s Made: 179
+
+3pt%: 37.8%
+
+Total 2s Attempted: 674
+
+Total 2s Made: 327
+
+2pt%: 48.5%
+
+
+
+2020 Khris Middleton
+
+Total Shots Attempted: 947
+
+Total 3s Attempted: 354
+
+Total 3s Made: 147
+
+3pt%: 41.5%
+
+Total 2s Attempted: 593
+
+Total 2s Made: 324
+
+2pt%: 54.6%
+
+
+
+2021 Khris Middleton
+
+Total Shots Attempted: 1074
+
+Total 3s Attempted: 365
+
+Total 3s Made: 151
+
+3pt%: 41.4%
+
+Total 2s Attempted: 709
+
+Total 2s Made: 360
+
+2pt%: 349
+
+```{r, echo=FALSE}
+# This creates plots of every shot Giannis Antetokounmpo took in every season from 2014-2021
+ggplot(data = filter(bucks_shots, namePlayer == "Giannis Antetokounmpo")) +
+  theme(panel.background = element_rect(fill = "transparent", color = NA)) +
+  annotation_custom(rasterGrob(img), xmin=-250, xmax=250, ymin=-47.5, ymax=892.5) +
+  geom_point(mapping = aes(x = locationX, y = locationY, color = isShotMade, shape = typeShot)) +
+  scale_color_manual(name = "Made/Missed", values= c("red", "green"), labels = c("Missed", "Made")) +
+  scale_shape_manual(values = c("2PT Field Goal" = 1, "3PT Field Goal" = 2)) +
+  labs(title = "Giannis Antetokounmpo Shot Chart (Regular Season)", x = "X-Coordinate", y = "Y-Coordinate", color = "Made Shot", shape = "Type of Shot", subtitle = 'Year: {closest_state}') +
+  coord_fixed() +
+  transition_states(yearSeason, transition_length = 2, state_length = 5) +
+  ease_aes('linear') +
+  theme_void()
+```
+
+
+2014 Giannis Antetokounmpo 
+
+Total Shots Attempted: 418 
+
+Total 3s Attempted: 118 
+
+Total 3s Made: 41 
+
+3pt%: 34.7% 
+
+Total 2s Attempted: 300 
+
+Total 2s Made: 132 
+
+2pt%: 44.0%") 
+
+
+
+2015 Giannis Antetokounmpo
+
+Total Shots Attempted: 780
+
+Total 3s Attempted: 44
+
+Total 3s Made: 7
+
+3pt%: 15.9%
+
+Total 2s Attempted: 736
+
+Total 2s Made: 376
+
+2pt%: 51.1%
+
+
+
+2016 Giannis Antetokounmpo
+
+Total Shots Attempted: 1011
+
+Total 3s Attempted: 107
+
+Total 3s Made: 27
+
+3pt%: 25.2
+
+Total 2s Attempted: 904
+
+Total 2s Made: 485
+
+2pt%: 53.7%
+
+
+
+2017 Giannis Antetokounmpo
+
+Total Shots Attempted: 1258
+
+Total 3s Attempted: 179
+
+Total 3s Made: 49
+
+3pt%: 27.4%
+
+Total 2s Attempted: 1079
+
+Total 2s Made: 607
+
+2pt%: 56.3%
+
+
+
+2018 Giannis Antetokounmpo
+
+Total Shots Attempted: 1672
+
+Total 3s Attempted: 410
+
+Total 3s Made: 43
+
+3pt%: 30.7%
+
+Total 2s Attempted: 1262
+
+Total 2s Made: 699
+
+2pt%: 55.4%
+
+
+
+2019 Giannis Antetokounmpo1195
+
+Total Shots Attempted: 
+
+Total 3s Attempted: 151
+
+Total 3s Made: 52
+
+3pt%: 25.6%
+
+Total 2s Attempted: 1044
+
+Total 2s Made: 669
+
+2pt%: 64.1%
+
+
+
+2020 Giannis Antetokounmpo
+
+Total Shots Attempted: 1238
+
+Total 3s Attempted: 293
+
+Total 3s Made: 89
+
+3pt%: 30.4%
+
+Total 2s Attempted: 945
+
+Total 2s Made: 596
+
+2pt%: 63.1%
+
+
+
+2021 Giannis Antetokounmpo
+
+Total Shots Attempted: 1121
+
+Total 3s Attempted: 224
+
+Total 3s Made: 67
+
+3pt%: 29.9%
+
+Total 2s Attempted: 897
+
+Total 2s Made: 559
+
+2pt%: 63.4%

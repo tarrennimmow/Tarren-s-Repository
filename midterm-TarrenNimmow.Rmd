@@ -1,0 +1,486 @@
+---
+title: "STAT 345 Midterm Project"
+font: 12pt
+date: "Due March 31"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+> "Our offense is like the Pythagorean Theorem. There is no answer!", _Shaquille O'Neal_
+
+
+## The Background
+
+Your role for the midterm project is that of data analyst intern at an NBA (professional basketball) team. Your direct supervisor (also part of the analytics team) has asked you to create a data visualization to illustrate how (or if) the team's shots have changed over time. After some initial clarifying questions, your supervisor confessed that they had seen some pretty cool shot charts at http://savvastjortjoglou.com/nba-shot-sharts.html and would like to extend the ideas a bit. 
+
+Your data for the midterm project may come from a variety of sources, including the NBA directly, as well as Basketball-Reference, HoopsHype, and others. There are several ways to access the data, but perhaps the simplest is through the `nbastatR` package, which serves as a wrapper (or set of helper functions) for these various data sources. There is a lot of potentially useful information that can be found using this package; unfortunately, the documentation is somewhat inconsistent. For example, the documentation at https://www.rdocumentation.org/packages/nbastatR/versions/0.1.110202031 is pretty well-formatted and easy to navigate, but the current function names have changed a bit (see `?nbastatR` and click "Index"). (If you use the nbastatR package, you'll want to install the package using the following code. There are other packages with this type of data, though.)
+
+```{r}
+library(devtools)
+devtools::install_github("abresler/nbastatR")
+```
+
+```{r}
+library(nbastatR)
+library(tidyverse)
+library(ggplot2)
+library(ggforce)
+library(gganimate)
+library(ggtext)
+library(png)
+library(grid)
+library(jpeg)
+img <- readJPEG("output-onlinejpgtools.jpg")
+```
+
+    
+```{r}
+# This code chunk creates a new dataset of some bucks shooting stats from 2013-2021
+Sys.setenv(VROOM_CONNECTION_SIZE=500072)
+
+bucks_shots <- teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2014, nest_data = F, return_message = T) %>%
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2015, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2016, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2017, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2018, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2019, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2020, nest_data = F, return_message = T)) %>% 
+bind_rows(teams_shots(teams = "Milwaukee Bucks", season_types = "Regular Season", seasons = 2021, nest_data = F, return_message = T)) 
+
+bucks_shots <- select(bucks_shots, "namePlayer","yearSeason", "typeShot", "locationX", "locationY", "isShotMade")
+```
+
+```{r}
+# This code creates a chart of every shot taken in a bucks season from 2014-2021
+ggplot(bucks_shots, aes(locationX, locationY, color = isShotMade, shape = typeShot)) +
+  theme(panel.background = element_rect(fill = "transparent", color = NA)) +
+  annotation_custom(rasterGrob(img), xmin=-252, xmax=252, ymin=-47.5, ymax=893) +
+  geom_point(mapping = aes(x=locationX, y=locationY), alpha = 0.5, size = .75) +
+  scale_color_manual(name = "Made/Missed", values= c("red", "green"), labels = c("Missed", "Made")) +
+  scale_shape_manual(name = "Shot Type", values = c(0,2), labels = c("2PT", "3PT")) +
+  ggtitle("Every Bucks Shot by Season") +
+  xlab("Baseline") +
+  ylab("Sideline") +
+  coord_fixed() +
+  transition_time(yearSeason) +
+  ease_aes('linear') +
+  labs(subtitle = 'Year: {closest_state}') +
+  theme(legend.text = element_text(size=12)) + 
+  theme(legend.key.size = unit(2, "lines")) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank()) +
+  transition_states(yearSeason, transition_length = 2, state_length = 10) +
+  ease_aes('linear')
+
+```
+
+```{r}
+# This code chunk displays the number of threes attempted per season and whether or not they were made
+# This gave me information to put on the report
+
+# Filter for the desired season and 3-point shots only
+season_shots <- filter(bucks_shots, yearSeason == 2014 & typeShot == "3PT Field Goal")
+made_missed <- season_shots %>%
+group_by(isShotMade) %>%
+# Count the number of made and missed 3-pointers
+summarize(count = n())
+# Print the results
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2015 & typeShot == "3PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2016 & typeShot == "3PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2017 & typeShot == "3PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2018 & typeShot == "3PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+ 
+
+season_shots <- filter(bucks_shots, yearSeason == 2019 & typeShot == "3PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2020 & typeShot == "3PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2021 & typeShot == "3PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+```
+
+```{r}
+# This code chunk displays the number of twos attempted per season and whether or not they were made
+# This gave me information to put on the report
+
+# Filter for the desired season and 2-point shots only
+season_shots <- filter(bucks_shots, yearSeason == 2014 & typeShot == "2PT Field Goal")
+# Count the number of made and missed 2-pointers
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+# Print the results
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2015 & typeShot == "2PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2016 & typeShot == "2PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2017 & typeShot == "2PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2018 & typeShot == "2PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2019 & typeShot == "2PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2020 & typeShot == "2PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2021 & typeShot == "2PT Field Goal")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+```
+
+```{r}
+# This creates plots of every shot Khris Middleton took in every season from 2014-2021
+ggplot(data = filter(bucks_shots, namePlayer == "Khris Middleton")) +
+  theme(panel.background = element_rect(fill = "transparent", color = NA)) +
+  annotation_custom(rasterGrob(img), xmin=-250, xmax=250, ymin=-47.5, ymax=892.5) +
+  geom_point(mapping = aes(x = locationX, y = locationY, color = isShotMade, shape = typeShot)) +
+  scale_color_manual(name = "Made/Missed", values= c("red", "green"), labels = c("Missed", "Made")) +
+  scale_shape_manual(values = c("2PT Field Goal" = 1, "3PT Field Goal" = 2)) +
+  labs(title = "Khris Middleton Shot Chart (Regular Season)", x = "X-Coordinate", y = "Y-Coordinate", color = "Made Shot", shape = "Type of Shot", subtitle = 'Year: {closest_state}') +
+  coord_fixed() +
+  transition_states(yearSeason, transition_length = 2, state_length = 5) +
+  ease_aes('linear') +
+  theme_void()
+```
+
+```{r}
+# This is the same code chunk I used before to find 2PT Field Goal Attempts, but I filtered the shot attempts to only be from Khris Middleton
+
+# Filter for the desired season and 2-point shots only
+season_shots <- filter(bucks_shots, yearSeason == 2014 & typeShot == "2PT Field Goal" & namePlayer == "Khris Middleton")
+# Count the number of made and missed 2-pointers
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+# Print the results
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2015 & typeShot == "2PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2016 & typeShot == "2PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2017 & typeShot == "2PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2018 & typeShot == "2PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2019 & typeShot == "2PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2020 & typeShot == "2PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2021 & typeShot == "2PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+```
+
+```{r}
+# This is the same code chunk I used before to find 3PT Field Goal Attempts, but I filtered the shot attempts to only be from Khris Middleton
+
+# Filter for the desired season and 2-point shots only
+season_shots <- filter(bucks_shots, yearSeason == 2014 & typeShot == "3PT Field Goal" & namePlayer == "Khris Middleton")
+# Count the number of made and missed 2-pointers
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+# Print the results
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2015 & typeShot == "3PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2016 & typeShot == "3PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2017 & typeShot == "3PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2018 & typeShot == "3PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2019 & typeShot == "3PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2020 & typeShot == "3PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2021 & typeShot == "3PT Field Goal" & namePlayer == "Khris Middleton")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+```
+
+```{r}
+# This creates plots of every shot Giannis Antetokounmpo took in every season from 2014-2021
+ggplot(data = filter(bucks_shots, namePlayer == "Giannis Antetokounmpo")) +
+  theme(panel.background = element_rect(fill = "transparent", color = NA)) +
+  annotation_custom(rasterGrob(img), xmin=-250, xmax=250, ymin=-47.5, ymax=892.5) +
+  geom_point(mapping = aes(x = locationX, y = locationY, color = isShotMade, shape = typeShot)) +
+  scale_color_manual(name = "Made/Missed", values= c("red", "green"), labels = c("Missed", "Made")) +
+  scale_shape_manual(values = c("2PT Field Goal" = 1, "3PT Field Goal" = 2)) +
+  labs(title = "Giannis Antetokounmpo Shot Chart (Regular Season)", x = "X-Coordinate", y = "Y-Coordinate", color = "Made Shot", shape = "Type of Shot", subtitle = 'Year: {closest_state}') +
+  coord_fixed() +
+  transition_states(yearSeason, transition_length = 2, state_length = 5) +
+  ease_aes('linear') +
+  theme_void()
+```
+
+```{r}
+# This is the same code chunk I used before to find 3PT Field Goal Attempts, but I filtered the shot attempts to only be from Giannis Antetokounmpo
+
+# Filter for the desired season and 2-point shots only
+season_shots <- filter(bucks_shots, yearSeason == 2014 & typeShot == "2PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+# Count the number of made and missed 2-pointers
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+# Print the results
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2015 & typeShot == "2PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2016 & typeShot == "2PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2017 & typeShot == "2PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2018 & typeShot == "2PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2019 & typeShot == "2PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2020 & typeShot == "2PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2021 & typeShot == "2PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+```
+
+```{r}
+# This is the same code chunk I used before to find 3PT Field Goal Attempts, but I filtered the shot attempts to only be from Giannis Antetokounmpo
+
+# Filter for the desired season and 2-point shots only
+season_shots <- filter(bucks_shots, yearSeason == 2014 & typeShot == "3PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+# Count the number of made and missed 2-pointers
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+# Print the results
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2015 & typeShot == "3PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2016 & typeShot == "3PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2017 & typeShot == "3PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2018 & typeShot == "3PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2019 & typeShot == "3PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2020 & typeShot == "3PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+
+
+season_shots <- filter(bucks_shots, yearSeason == 2021 & typeShot == "3PT Field Goal" & namePlayer == "Giannis Antetokounmpo")
+made_missed <- season_shots %>%
+  group_by(isShotMade) %>%
+  summarize(count = n())
+made_missed
+```
